@@ -2,7 +2,7 @@
 <head>
 <meta name="google-signin-scope" content="profile email">
 <meta name="google-signin-client_id"
-	content="927375242383-t21v9ml38tkh2pr30m4hqiflkl3jfohl.apps.googleusercontent.com">
+	content="689297071615-irgk1dtiu0ts6bntktqmshsc7u44610o.apps.googleusercontent.com">
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 
 
@@ -74,7 +74,7 @@ var Profile={
   },
    postMessage: function() {
 		var data={'url': "https://dummyimage.com/320x200/000/fff&text="+Date.now(),
-				'body': "paglop "+Date.now()}
+				'body': "pouet "+Date.now()}
     	console.log("post:"+data)
 		return m.request({
     		method: "POST",
@@ -106,7 +106,8 @@ var PostView = {
 						console.log("like:"+item.key.id)
 		                 }},"like")),
 		                 m("td", m("button", {onclick: function(e) {
-		     				console.log("del:"+item.key.id)
+		     				//console.log("del:"+item.key.name)
+		     				PostView.deleteMessage(item.key.name)
 		                 }},"del")),
 			        m('td', m('label', item.properties.body)),
 			        m('td', m('img', {class: 'is-rounded', 'src': item.properties.url})),
@@ -121,7 +122,15 @@ var PostView = {
 				  "Next"),
 			   ])
 			 ])
-		  }
+		  },
+		  deleteMessage: function(param){
+				return m.request({
+		    		method: "POST",
+		    		url: "_ah/api/myApi/v1/deleteMessage"+'?access_token='+encodeURIComponent(Profile.ID),
+		        	params: param,
+		    	})
+			}
+			  
 		}
 
 

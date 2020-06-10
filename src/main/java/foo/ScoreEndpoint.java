@@ -38,12 +38,12 @@ import com.google.appengine.api.datastore.Transaction;
 
 @Api(name = "myApi",
      version = "v1",
-     audiences = "927375242383-t21v9ml38tkh2pr30m4hqiflkl3jfohl.apps.googleusercontent.com",
-  	 clientIds = "927375242383-t21v9ml38tkh2pr30m4hqiflkl3jfohl.apps.googleusercontent.com",
+     audiences = "689297071615-irgk1dtiu0ts6bntktqmshsc7u44610o.apps.googleusercontent.com",
+  	 clientIds = "689297071615-irgk1dtiu0ts6bntktqmshsc7u44610o.apps.googleusercontent.com",
      namespace =
      @ApiNamespace(
-		   ownerDomain = "helloworld.example.com",
-		   ownerName = "helloworld.example.com",
+		   ownerDomain = "webandcloud-273109.appspot.com",
+		   ownerName = "webandcloud-273109.appspot.com",
 		   packagePath = "")
      )
 
@@ -107,6 +107,7 @@ public class ScoreEndpoint {
 		e.setProperty("owner", pm.owner);
 		e.setProperty("url", pm.url);
 		e.setProperty("body", pm.body);
+		//e.setProperty("to",xxxx);
 		e.setProperty("likec", 0);
 		e.setProperty("date", new Date());
 
@@ -115,6 +116,15 @@ public class ScoreEndpoint {
 		datastore.put(e);
 		txn.commit();
 		return e;
+	}
+	
+	@ApiMethod(name = "deleteMessage", httpMethod = HttpMethod.POST)
+	public void deleteMessage(Key[] keyDm) {
+
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction txn = datastore.beginTransaction();
+		datastore.delete(keyDm);
+		
 	}
 
 	@ApiMethod(name = "mypost", httpMethod = HttpMethod.GET)
