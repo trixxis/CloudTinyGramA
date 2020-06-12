@@ -118,22 +118,41 @@ public class ScoreEndpoint {
 		return e;
 	}
 	
-	@ApiMethod(name = "addprofil", httpMethod = HttpMethod.POST)
-	public Entity addprofil(PostMessage pm) {
+    /*@ApiMethod(name = "profilExist", httpMethod = HttpMethod.POST)
+	public List<Entity> profilExist(ProfilMessage Pm) {
+		
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		
+		Query q = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, Pm.email));
 
-		Entity e = new Entity("Profil"); // quelle est la clef ?? non specifié -> clef automatique
-		e.setProperty("owner", pm.owner);
-		e.setProperty("url", pm.url);
-		e.setProperty("body", pm.body);
-		e.setProperty("to","test follows");
-		e.setProperty("likec", 0);
-		e.setProperty("date", new Date());
+		PreparedQuery pq = datastore.prepare(q);
+		List<Entity> result = pq.asList(FetchOptions.Builder.withDefaults());
+		
+		return result;
+	}*/
+	
+	@ApiMethod(name = "addprofil", httpMethod = HttpMethod.POST)
+	public void addprofil(ProfilMessage Pm) {
 
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		Transaction txn = datastore.beginTransaction();
-		datastore.put(e);
-		txn.commit();
-		return e;
+		
+		Query q = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, Pm.email));
+
+		PreparedQuery pq = datastore.prepare(q);
+		List<Entity> result = pq.asList(FetchOptions.Builder.withDefaults());
+		
+		if (result.isEmpty())
+		{
+			Entity e = new Entity("Profil"); // quelle est la clef ?? non specifié -> clef automatique
+			e.setProperty("mail", Pm.email);
+			e.setProperty("follow", "");
+			e.setProperty("pseudo", Pm.pseudo);
+
+			Transaction txn = datastore.beginTransaction();
+			datastore.put(e);
+			txn.commit();
+		}
+		
 	}
 	
 	@ApiMethod(name = "deleteMessage", httpMethod = HttpMethod.POST)
@@ -178,8 +197,7 @@ public class ScoreEndpoint {
 	    
 	}
     
-	@ApiMethod(name = "getPost",
-		   httpMethod = ApiMethod.HttpMethod.GET)
+	@ApiMethod(name = "getPost",httpMethod = ApiMethod.HttpMethod.GET)
 	public CollectionResponse<Entity> getPost(User user, @Nullable @Named("next") String cursorString)
 			throws UnauthorizedException {
 

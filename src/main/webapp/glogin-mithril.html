@@ -166,7 +166,16 @@ function onSignIn(googleUser) {
   Profile.email=profile.getEmail();
   Profile.ID=googleUser.getAuthResponse().id_token;
   Profile.url=profile.getImageUrl();
-  m.route.set("/secret")
+  m.route.set("/secret");
+  
+  var data={'email': Profile.email,'follow': Profile.body,'pseudo': Profile.name}
+	console.log("postProfil:"+data)
+	return m.request({
+		method: "POST",
+		url: "_ah/api/myApi/v1/addprofil"+'?access_token='+encodeURIComponent(Profile.ID),
+  		params: data,
+	})
+   
 }
 		
 var Login = {
@@ -192,5 +201,3 @@ m.route(document.body, "/secret", {
 	</script>
 </body>
 </html>
-
-
