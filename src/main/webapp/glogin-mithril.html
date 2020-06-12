@@ -23,22 +23,44 @@
 <body>
 	<script>
 	
+	
 var Profile={
   name:"",
   email:"",
   ID:"",
   url:"",
+  URLpost:"",
+  body:"",
   nextToken:"",
   list:[],
   view: function(){
 	return m('div', {class:'container'}, [
-  	  m("h1", {class: 'title'}, "name:"+Profile.name),
+  	  m("h1", {class: 'title'}, "Pseudo:"+Profile.name),
 	  m("h2", {class: 'subtitle'}, "email:"+Profile.email),
 	  m("img",{"src":Profile.url}),
+	  m('div', {class:'field'},[
+	         m("label", {class:'label'},"Follow"),
+	         m('div',{class:'control'}, m("input[type=text]", {
+	          class:'input is-rounded',
+	          placeholder:"@mail de la personne a follow",
+	             oninput: function(e) {Profile.URLpost = e.target.value}})),]),
 	  m("button",{class:"button", onclick: function(e) { Profile.loadList()}},"Msgs"),
 	  m("button",{class:"button", onclick: function(e) { Profile.postMessage()}},"Post Dummy"),
-	  m("div",m(PostView,{profile: Profile}))
-	])
+	  m("button",{class:"button", onclick: function(e) { Profile.postMessage()}},"Follow"),
+	  m('div', {class:'field'},[
+	         m("label", {class:'label'},"URL"),
+	         m('div',{class:'control'}, m("input[type=text]", {
+	          class:'input is-rounded',
+	          placeholder:"Your url",
+	             oninput: function(e) {Profile.URLpost = e.target.value}})),]),
+      m('div',{class:'field'},[
+	    	  m("label", {class: 'label'},"Body"),
+	          m('div',{class:'control'},m("input[type=textarea]", {
+	        class:'textarea',
+	        placeholder:"your text",
+	        oninput: function(e) { Profile.body = e.target.value }})),
+	        ]),
+	  m("div",m(PostView,{profile: Profile}))])
   },
   loadList: function() {
       return m.request({
@@ -73,8 +95,8 @@ var Profile={
           }})
   },
    postMessage: function() {
-		var data={'url': "https://dummyimage.com/320x200/000/fff&text="+Date.now(),
-				'body': "pouet "+Date.now()}
+		var data={'url': Profile.URLpost,
+				'body': Profile.body}
     	console.log("post:"+data)
 		return m.request({
     		method: "POST",
@@ -107,7 +129,7 @@ var PostView = {
 		                 }},"like")),
 		                 m("td", m("button", {onclick: function(e) {
 		     				//console.log("del:"+item.key.name)
-		     				PostView.deleteMessage(item.key.name)
+		     				PostView.deleteMessage(item.key)
 		                 }},"del")),
 			        m('td', m('label', item.properties.body)),
 			        m('td', m('img', {class: 'is-rounded', 'src': item.properties.url})),
@@ -130,6 +152,10 @@ var PostView = {
 		        	params: param,
 		    	})
 			}
+		  /*.then(function() {
+	 			console.log("DeleteMessage done")
+	 			//PostView.view()
+  	 	})*/
 			  
 		}
 

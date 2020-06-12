@@ -107,7 +107,25 @@ public class ScoreEndpoint {
 		e.setProperty("owner", pm.owner);
 		e.setProperty("url", pm.url);
 		e.setProperty("body", pm.body);
-		//e.setProperty("to",xxxx);
+		e.setProperty("to","test follows");
+		e.setProperty("likec", 0);
+		e.setProperty("date", new Date());
+
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Transaction txn = datastore.beginTransaction();
+		datastore.put(e);
+		txn.commit();
+		return e;
+	}
+	
+	@ApiMethod(name = "addprofil", httpMethod = HttpMethod.POST)
+	public Entity addprofil(PostMessage pm) {
+
+		Entity e = new Entity("Profil"); // quelle est la clef ?? non specifié -> clef automatique
+		e.setProperty("owner", pm.owner);
+		e.setProperty("url", pm.url);
+		e.setProperty("body", pm.body);
+		e.setProperty("to","test follows");
 		e.setProperty("likec", 0);
 		e.setProperty("date", new Date());
 
@@ -119,10 +137,10 @@ public class ScoreEndpoint {
 	}
 	
 	@ApiMethod(name = "deleteMessage", httpMethod = HttpMethod.POST)
-	public void deleteMessage(Key[] keyDm) {
+	public void deleteMessage(Key keyDm) {
 
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		Transaction txn = datastore.beginTransaction();
+		
 		datastore.delete(keyDm);
 		
 	}
