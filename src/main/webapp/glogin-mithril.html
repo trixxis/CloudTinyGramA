@@ -5,6 +5,8 @@
 	content="689297071615-irgk1dtiu0ts6bntktqmshsc7u44610o.apps.googleusercontent.com">
 <script src="https://apis.google.com/js/platform.js" async defer></script>
 
+<!-- 689297071615-irgk1dtiu0ts6bntktqmshsc7u44610o.apps.googleusercontent.com -->
+<!-- 914119626620-nkqsg1662c07sdc0vkc9u90d32aofmch.apps.googleusercontent.com -->
 
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
@@ -125,7 +127,20 @@ var PostView = {
 			    vnode.attrs.profile.list.map(function(item) {
 			      return m("tr", [
 		            m("td", m("button", {onclick: function(e) {
-						console.log("like:"+item.key.id)
+		            	var data = {
+		            			url: item.key.name,
+		            			body: "",
+		            			key: item.key
+		            	}
+						m.request({
+							method: "POST",
+							url: "_ah/api/myApi/v1/like"+'?access_token='+encodeURIComponent(Profile.ID),
+							params: data
+						})
+						.then(function(result) {
+							console.log({'result': result});
+							item.properties.likec++;
+						});
 		                 }},"like")),
 		                 m("td", m("button", {onclick: function(e) {
 		     				//console.log("del:"+item.key.name)

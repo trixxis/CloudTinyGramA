@@ -1,5 +1,9 @@
 package foo;
 
+//914119626620-nkqsg1662c07sdc0vkc9u90d32aofmch.apps.googleusercontent.com
+//689297071615-irgk1dtiu0ts6bntktqmshsc7u44610o.apps.googleusercontent.com
+//689297071615-irgk1dtiu0ts6bntktqmshsc7u44610o.apps.googleusercontent.com
+
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -21,6 +25,7 @@ import com.google.appengine.api.datastore.Cursor;
 import com.google.appengine.api.datastore.DatastoreService;
 import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
+import com.google.appengine.api.datastore.EntityNotFoundException;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
 import com.google.appengine.api.datastore.Query;
@@ -75,6 +80,66 @@ public class ScoreEndpoint {
 		List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(10));
 		return result;
 	}
+	
+	@ApiMethod(name = "like", httpMethod = HttpMethod.POST)
+	public Entity like(User user, PostMessage pm) throws UnauthorizedException {
+
+		QueryResultList<Entity> results;
+		if (user == null) {
+			throw new UnauthorizedException("Invalid credentials");
+		}
+
+		System.out.println(pm.key.toString());
+		Entity post = new Entity(pm.url);
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+//		try {
+			Query q = new Query("Post").setFilter(new FilterPredicate("name", FilterOperator.NOT_EQUAL, pm.url));
+			//q = new Query("Post").setKeysOnly();
+			//post = datastore.get(post.getKey());
+			PreparedQuery pq = datastore.prepare(q);
+			FetchOptions fetchOptions = FetchOptions.Builder.withLimit(2);
+		   
+		    
+		    results = pq.asQueryResultList(fetchOptions);
+
+			//post = datastore.get(post.getKey());
+			System.out.println(results.toString());
+		//} catch (EntityNotFoundException e) {
+			// TODO Auto-generated catch block/			e.printStackTrace();
+		//}
+//		//Integer likec = (Integer)post.getProperty("likec");
+//		//post.setProperty("likec", likec);
+//
+//	Solution pour pas projeter les listes
+//	Entity pi = new Entity("PostIndex", e.getKey());
+//		HashSet<String> rec=new HashSet<String>();
+//		pi.setProperty("receivers",rec);
+//		
+//		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+//		Transaction txn = datastore.beginTransaction();
+//		datastore.put(e);
+//		datastore.put(pi);
+//		txn.commit();
+//		return e;
+
+		return post;
+	}
+
+//	@ApiMethod(name = "like", httpMethod = HttpMethod.POST)
+//	public void like(Key postKey) {
+//		Entity post;
+//		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+//		System.out.println(postKey);
+//		try {
+//			//post = datastore.get(postKey);
+//			Integer likec = (Integer) post.getProperty("likec");
+//			post.setProperty("likec", likec);
+//			datastore.put(post);
+//		} catch (EntityNotFoundException e) {
+//			// TODO Auto-generated catch block
+//			e.printStackTrace();
+//		}
+//	}
 
 	@ApiMethod(name = "myscores", httpMethod = HttpMethod.GET)
 	public List<Entity> myscores(@Named("name") String name) {
