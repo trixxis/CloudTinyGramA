@@ -1,5 +1,7 @@
 package foo;
 
+import java.lang.reflect.Array;
+import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -118,19 +120,6 @@ public class ScoreEndpoint {
 		return e;
 	}
 	
-    /*@ApiMethod(name = "profilExist", httpMethod = HttpMethod.POST)
-	public List<Entity> profilExist(ProfilMessage Pm) {
-		
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		
-		Query q = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, Pm.email));
-
-		PreparedQuery pq = datastore.prepare(q);
-		List<Entity> result = pq.asList(FetchOptions.Builder.withDefaults());
-		
-		return result;
-	}*/
-	
 	@ApiMethod(name = "addprofil", httpMethod = HttpMethod.POST)
 	public void addprofil(ProfilMessage Pm) {
 
@@ -151,8 +140,39 @@ public class ScoreEndpoint {
 			Transaction txn = datastore.beginTransaction();
 			datastore.put(e);
 			txn.commit();
-		}
+		}	
+	}
+	
+	@ApiMethod(name = "followprofil", httpMethod = HttpMethod.POST)
+	public Entity followprofil(FollowMessage Fm) {
+
+		//Controle si la personne a follow a un profil connu dans la base
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		
+		Query q = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, Fm.mailFollow));
+
+		PreparedQuery pq = datastore.prepare(q);
+		List<Entity> result = pq.asList(FetchOptions.Builder.withDefaults());
+		
+		//Si oui alors ajouter la follow dans le tableau de follow
+		if (result.size()==1)
+		{
+			Query q2 = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, Fm.mail));
+			PreparedQuery pq2 = datastore.prepare(q2);
+			Entity result2 = pq2.asSingleEntity();
+			List<String> tab = new ArrayList<>();
+			tab = (List<String>) result2.getProperty("follow");
+			tab.add(Fm.mailFollow);
+			result2.setProperty("follow", tab);
+			Transaction txn = datastore.beginTransaction();
+			datastore.put(result2);
+			txn.commit();
+			return(result2);
+		}
+		else
+		{
+			return null;
+		}
 	}
 	
 	@ApiMethod(name = "deleteMessage", httpMethod = HttpMethod.POST)

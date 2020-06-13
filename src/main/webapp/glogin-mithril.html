@@ -27,6 +27,7 @@
 var Profile={
   name:"",
   email:"",
+  emailfollow:"",
   ID:"",
   url:"",
   URLpost:"",
@@ -35,7 +36,7 @@ var Profile={
   list:[],
   view: function(){
 	return m('div', {class:'container'}, [
-  	  m("h1", {class: 'title'}, "Pseudo:"+Profile.name),
+  	  m("h1", {class: 'title'}, "Pseudo 17:51:"+Profile.name),
 	  m("h2", {class: 'subtitle'}, "email:"+Profile.email),
 	  m("img",{"src":Profile.url}),
 	  m('div', {class:'field'},[
@@ -43,10 +44,10 @@ var Profile={
 	         m('div',{class:'control'}, m("input[type=text]", {
 	          class:'input is-rounded',
 	          placeholder:"@mail de la personne a follow",
-	             oninput: function(e) {Profile.URLpost = e.target.value}})),]),
+	             oninput: function(e) {Profile.emailfollow = e.target.value}})),]),
 	  m("button",{class:"button", onclick: function(e) { Profile.loadList()}},"Msgs"),
 	  m("button",{class:"button", onclick: function(e) { Profile.postMessage()}},"Post Dummy"),
-	  m("button",{class:"button", onclick: function(e) { Profile.postMessage()}},"Follow"),
+	  m("button",{class:"button", onclick: function(e) { Profile.follow()}},"Follow"),
 	  m('div', {class:'field'},[
 	         m("label", {class:'label'},"URL"),
 	         m('div',{class:'control'}, m("input[type=text]", {
@@ -107,6 +108,19 @@ var Profile={
 	 			console.log("post_message:",result)
 	 			Profile.loadList()
     	 	})
+	},
+  follow: function() {
+		var data={'mail': Profile.email,
+				'mailFollow': Profile.emailfollow}
+  	console.log("post:"+ Profile.emailfollow)
+		return m.request({
+  		method: "POST",
+  		url: "_ah/api/myApi/v1/followprofil"+'?access_token='+encodeURIComponent(Profile.ID),
+      	params: data,
+  	})
+	    	.then(function(result) {
+	 			console.log("resultat follow:",result)
+  	 	})
 	}
 }
 
