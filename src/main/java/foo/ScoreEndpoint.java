@@ -200,7 +200,7 @@ public class ScoreEndpoint {
 	}
 	
 	@ApiMethod(name = "likeMessage", httpMethod = HttpMethod.POST)
-	public Key likeMessage(PostKey pk) {
+	public Key likeMessage(User user, PostKey pk) {
 
 		
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
@@ -210,13 +210,17 @@ public class ScoreEndpoint {
 		Entity result = pq.asSingleEntity();
 		List<String> tab = new ArrayList<>();
 		tab = (List<String>) result.getProperty("likec");
-		tab.add(pk.mail);
-		result.setProperty("likec", tab);
-		datastore.put(result);
+		if (!tab.contains(user.getEmail()))
+		{
+			tab.add(user.getEmail());
+			result.setProperty("likec", tab);
+			datastore.put(result);
 
+			
+			Transaction txn = datastore.beginTransaction();
+			txn.commit();
+		}
 		
-		Transaction txn = datastore.beginTransaction();
-		txn.commit();
 		return k;
 	}
 	
@@ -334,7 +338,6 @@ public class ScoreEndpoint {
 		List<String> tab2 = new ArrayList<>();
 		List<String> tab3 = new ArrayList<>();
 		tab3 = (List<String>)result.getProperty("follower");
-		//tab.add("");
 		tab2.add("");
 
 		Entity e = new Entity("Post", Long.MAX_VALUE-(new Date()).getTime()+":"+user.getEmail());
