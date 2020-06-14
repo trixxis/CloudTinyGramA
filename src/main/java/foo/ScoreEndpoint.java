@@ -25,6 +25,7 @@ import com.google.appengine.api.datastore.DatastoreServiceFactory;
 import com.google.appengine.api.datastore.Entity;
 import com.google.appengine.api.datastore.FetchOptions;
 import com.google.appengine.api.datastore.Key;
+import com.google.appengine.api.datastore.KeyFactory;
 import com.google.appengine.api.datastore.Query;
 import com.google.appengine.api.datastore.PreparedQuery;
 import com.google.appengine.api.datastore.PropertyProjection;
@@ -105,15 +106,24 @@ public class ScoreEndpoint {
 	@ApiMethod(name = "postMessage", httpMethod = HttpMethod.POST)
 	public Entity postMessage(PostMessage pm) {
 
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		
+		Query q = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, pm.owner));
+		PreparedQuery pq = datastore.prepare(q);
+		Entity result = pq.asSingleEntity();
+		List<String> tab = new ArrayList<>();
+		List<String> tab2 = new ArrayList<>();
+		tab = (List<String>) result.getProperty("follower");
+		tab2.add("");
 		Entity e = new Entity("Post"); // quelle est la clef ?? non specifié -> clef automatique
 		e.setProperty("owner", pm.owner);
 		e.setProperty("url", pm.url);
 		e.setProperty("body", pm.body);
-		e.setProperty("to","test follows");
-		e.setProperty("likec", 0);
+		e.setProperty("to",tab);
+		e.setProperty("likec", tab2);
 		e.setProperty("date", new Date());
 
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		
 		Transaction txn = datastore.beginTransaction();
 		datastore.put(e);
 		txn.commit();
@@ -132,9 +142,12 @@ public class ScoreEndpoint {
 		
 		if (result.isEmpty())
 		{
+			List<String> tab = new ArrayList<>();
+			tab.add("");
 			Entity e = new Entity("Profil"); // quelle est la clef ?? non specifié -> clef automatique
 			e.setProperty("mail", Pm.email);
-			e.setProperty("follow", "");
+			e.setProperty("follow", tab);
+			e.setProperty("follower", tab);
 			e.setProperty("pseudo", Pm.pseudo);
 
 			Transaction txn = datastore.beginTransaction();
@@ -154,9 +167,9 @@ public class ScoreEndpoint {
 		PreparedQuery pq = datastore.prepare(q);
 		List<Entity> result = pq.asList(FetchOptions.Builder.withDefaults());
 		
-		//Si oui alors ajouter la follow dans le tableau de follow
-		if (result.size()==1)
+		if (result.size()==1)//test si le profil est en base
 		{
+			//Ajout du follow dans le profil faisant la demande de follow
 			Query q2 = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, Fm.mail));
 			PreparedQuery pq2 = datastore.prepare(q2);
 			Entity result2 = pq2.asSingleEntity();
@@ -166,6 +179,17 @@ public class ScoreEndpoint {
 			result2.setProperty("follow", tab);
 			Transaction txn = datastore.beginTransaction();
 			datastore.put(result2);
+			
+			//Ajout du follow dans le profil qui a été follow
+			Query q3 = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, Fm.mailFollow));
+			PreparedQuery pq3 = datastore.prepare(q3);
+			Entity result3 = pq3.asSingleEntity();
+			List<String> tab2 = new ArrayList<>();
+			tab2 = (List<String>) result3.getProperty("follower");
+			tab2.add(Fm.mail);
+			result3.setProperty("follower", tab2);
+			datastore.put(result3);
+			
 			txn.commit();
 			return(result2);
 		}
@@ -175,13 +199,47 @@ public class ScoreEndpoint {
 		}
 	}
 	
+	@ApiMethod(name = "likeMessage", httpMethod = HttpMethod.POST)
+	public Key likeMessage(PostKey pk) {
+
+		
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Key k = KeyFactory.createKey(pk.kind, pk.name);
+		Query q = new Query("Post").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, k));
+		PreparedQuery pq = datastore.prepare(q);
+		Entity result = pq.asSingleEntity();
+		List<String> tab = new ArrayList<>();
+		tab = (List<String>) result.getProperty("likec");
+		tab.add(pk.mail);
+		result.setProperty("likec", tab);
+		datastore.put(result);
+
+		
+		Transaction txn = datastore.beginTransaction();
+		txn.commit();
+		return k;
+	}
+	
+	@ApiMethod(name = "cptlike", httpMethod = HttpMethod.POST)
+	public List<String> cptlike(PostKey pk) {
+
+		
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Key k = KeyFactory.createKey(pk.kind, pk.name);
+		Query q = new Query("Post").setFilter(new FilterPredicate(Entity.KEY_RESERVED_PROPERTY, FilterOperator.EQUAL, k));
+		PreparedQuery pq = datastore.prepare(q);
+		Entity result = pq.asSingleEntity();
+		List<String> tab = new ArrayList<>();
+		tab = (List<String>)result.getProperty("likec");
+		return tab;
+	}
+	
 	@ApiMethod(name = "deleteMessage", httpMethod = HttpMethod.POST)
-	public void deleteMessage(Key keyDm) {
+	public void deleteMessage(PostKey pk) {
 
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		
-		datastore.delete(keyDm);
-		
+		Key k = KeyFactory.createKey(pk.kind, pk.name);
+		datastore.delete(k);
 	}
 
 	@ApiMethod(name = "mypost", httpMethod = HttpMethod.GET)
@@ -266,12 +324,25 @@ public class ScoreEndpoint {
 		if (user == null) {
 			throw new UnauthorizedException("Invalid credentials");
 		}
+		
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		
+		Query q = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, user.getEmail()));
+		PreparedQuery pq = datastore.prepare(q);
+		Entity result = pq.asSingleEntity();
+		List<String> tab = new ArrayList<>();
+		List<String> tab2 = new ArrayList<>();
+		List<String> tab3 = new ArrayList<>();
+		tab3 = (List<String>)result.getProperty("follower");
+		//tab.add("");
+		tab2.add("");
 
 		Entity e = new Entity("Post", Long.MAX_VALUE-(new Date()).getTime()+":"+user.getEmail());
 		e.setProperty("owner", user.getEmail());
 		e.setProperty("url", pm.url);
 		e.setProperty("body", pm.body);
-		e.setProperty("likec", 0);
+		e.setProperty("to",tab3);
+		e.setProperty("likec", tab2);
 		e.setProperty("date", new Date());
 
 ///		Solution pour pas projeter les listes
@@ -279,11 +350,10 @@ public class ScoreEndpoint {
 //		HashSet<String> rec=new HashSet<String>();
 //		pi.setProperty("receivers",rec);
 		
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		Transaction txn = datastore.beginTransaction();
 		datastore.put(e);
 //		datastore.put(pi);
 		txn.commit();
-		return e;
+		return result;
 	}
 }

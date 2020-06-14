@@ -36,7 +36,7 @@ var Profile={
   list:[],
   view: function(){
 	return m('div', {class:'container'}, [
-  	  m("h1", {class: 'title'}, "Pseudo 17:51:"+Profile.name),
+  	  m("h1", {class: 'title'}, "Pseudo 15:56:"+Profile.name),
 	  m("h2", {class: 'subtitle'}, "email:"+Profile.email),
 	  m("img",{"src":Profile.url}),
 	  m('div', {class:'field'},[
@@ -139,15 +139,16 @@ var PostView = {
 			    vnode.attrs.profile.list.map(function(item) {
 			      return m("tr", [
 		            m("td", m("button", {onclick: function(e) {
-						console.log("like:"+item.key.id)
+						console.log("like:"+item.key.name)
+						PostView.likeMessage(item.key.kind, item.key.name)
 		                 }},"like")),
 		                 m("td", m("button", {onclick: function(e) {
 		     				//console.log("del:"+item.key.name)
-		     				PostView.deleteMessage(item.key)
+		     				PostView.deleteMessage(item.key.kind, item.key.name)
 		                 }},"del")),
 			        m('td', m('label', item.properties.body)),
 			        m('td', m('img', {class: 'is-rounded', 'src': item.properties.url})),
-			        m('td', m('label', item.properties.likec)),
+			        m('td', m('label', item.properties.likec.length)),
 			      ])
 			    }),
 //			    m("div", isError ? "An error occurred" : "Saved"),
@@ -159,18 +160,30 @@ var PostView = {
 			   ])
 			 ])
 		  },
-		  deleteMessage: function(param){
+		  deleteMessage: function(param, param2){
+			  var data={'kind': param,
+					  	'owner': "",
+						'name': param2}
 				return m.request({
 		    		method: "POST",
 		    		url: "_ah/api/myApi/v1/deleteMessage"+'?access_token='+encodeURIComponent(Profile.ID),
-		        	params: param,
-		    	})
-			}
-		  /*.then(function() {
-	 			console.log("DeleteMessage done")
-	 			//PostView.view()
-  	 	})*/
-			  
+		        	params: data,
+		    	}).then(function(result) {
+		 			console.log("resultat delete:",result)
+		  	 	})
+			},
+			likeMessage: function(param, param2){
+				var data={'kind': param,
+					  	'owner': Profile.email,
+						'name': param2}
+				return m.request({
+		    		method: "POST",
+		    		url: "_ah/api/myApi/v1/likeMessage"+'?access_token='+encodeURIComponent(Profile.ID),
+		        	params: data,
+		    	}).then(function(result) {
+		 			console.log("resultat like:",result)
+		  	 	})
+			}			  
 		}
 
 
