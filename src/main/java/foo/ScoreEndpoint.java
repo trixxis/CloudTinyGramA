@@ -131,7 +131,7 @@ public class ScoreEndpoint {
 	}
 	
 	@ApiMethod(name = "addprofil", httpMethod = HttpMethod.POST)
-	public void addprofil(ProfilMessage Pm) {
+	public Entity addprofil(ProfilMessage Pm) {
 
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		
@@ -155,7 +155,8 @@ public class ScoreEndpoint {
 			Transaction txn = datastore.beginTransaction();
 			datastore.put(e);
 			txn.commit();
-		}	
+		}
+		return result.get(0);
 	}
 	
 	@ApiMethod(name = "followprofil", httpMethod = HttpMethod.POST)
