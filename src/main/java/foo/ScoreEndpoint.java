@@ -144,10 +144,12 @@ public class ScoreEndpoint {
 		{
 			List<String> tab = new ArrayList<>();
 			tab.add("");
+			List<String> tab2 = new ArrayList<>();
+			tab2.add(Pm.email);
 			Entity e = new Entity("Profil"); // quelle est la clef ?? non specifié -> clef automatique
 			e.setProperty("mail", Pm.email);
 			e.setProperty("follow", tab);
-			e.setProperty("follower", tab);
+			e.setProperty("follower", tab2);
 			e.setProperty("pseudo", Pm.pseudo);
 
 			Transaction txn = datastore.beginTransaction();
@@ -287,8 +289,8 @@ public class ScoreEndpoint {
 			throw new UnauthorizedException("Invalid credentials");
 		}
 
-		Query q = new Query("Post").
-		    setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, user.getEmail()));
+		//Query q = new Query("Post").setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, user.getEmail()));
+		Query q = new Query("Post").setFilter(new FilterPredicate("to", FilterOperator.EQUAL, user.getEmail())); //erreur 400 collection of element require
 
 		// Multiple projection require a composite index
 		// owner is automatically projected...
