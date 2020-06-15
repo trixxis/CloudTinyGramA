@@ -240,6 +240,20 @@ public class ScoreEndpoint {
 		return tab;
 	}
 	
+	@ApiMethod(name = "cptfollower", httpMethod = HttpMethod.POST)
+	public List<String> cptfollower(User user) {
+
+		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
+		Query q = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, user.getEmail()));
+
+		PreparedQuery pq = datastore.prepare(q);
+		Entity result = pq.asSingleEntity();
+		List<String> tab = new ArrayList<>();
+		tab = (List<String>)result.getProperty("follower");
+		
+		return tab;
+	}
+	
 	@ApiMethod(name = "deleteMessage", httpMethod = HttpMethod.POST)
 	public void deleteMessage(PostKey pk) {
 

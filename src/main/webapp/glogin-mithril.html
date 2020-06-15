@@ -36,8 +36,9 @@ var Profile={
   list:[],
   view: function(){
 	return m('div', {class:'container'}, [
-  	  m("h1", {class: 'title'}, "Pseudo 11:51:"+Profile.name),
+  	  m("h1", {class: 'title'}, "Pseudo: "+Profile.name),
 	  m("h2", {class: 'subtitle'}, "email:"+Profile.email),
+	  m("h2", {class: 'subtitle'}, "Follower: over 9000-15:00"),
 	  m("img",{"src":Profile.url}),
 	  m('div', {class:'field'},[
 	         m("label", {class:'label'},"Follow"),
@@ -109,6 +110,19 @@ var Profile={
 	 			Profile.loadList()
     	 	})
 	},
+	/*cptFollower: function() {
+		//var data={'url': Profile.URLpost,
+			//	'body': Profile.body}
+		return m.request({
+    		method: "POST",
+    		url: "_ah/api/myApi/v1/cptfollower"+'?access_token='+encodeURIComponent(Profile.ID),
+        	//params: data,
+    	})
+	    	.then(function(result) {
+	 			console.log("nb follower:",result)
+	 			Profile.loadList()
+    	 	})
+	},*/
   follow: function() {
 		var data={'mail': Profile.email,
 				'mailFollow': Profile.emailfollow}
@@ -130,19 +144,23 @@ var PostView = {
 			  m('div',{class:'subtitle'},"My Posts"),
 			  m('table', {class:'table is-striped',"table":"is-striped"},[
 			    m('tr', [
+			      m('th', {width:"50px"}, "Profil"),
+			      m('th', {width:"50px"}, "Date"),
 				  m('th', {width:"50px"}, "like"),
-				  m('th', {width:"50px"}, "del"),
-			      m('th', {width:"50px"}, "Bodys"),
-			      m('th', {width:"50px"}, "Urls"),
-			      m('th', {width:"50px"}, "Like"),
+				  m('th', {width:"50px"}, "Sup"),
+			      m('th', {width:"50px"}, "Message"),
+			      m('th', {width:"50px"}, "Image"),
+			      m('th', {width:"50px"}, "Cpt Like"),
 			    ]),
 			    vnode.attrs.profile.list.map(function(item) {
 			      return m("tr", [
+			    	m('td', m('label', "Mr Test")),
+			    	m('td', m('label', "15/02/1991")),
 		            m("td", m("button", {onclick: function(e) {
 						console.log("like:"+item.key.name)
 						PostView.likeMessage(item.key.kind, item.key.name)
 		                 }},"like")),
-		                 m("td", m("button", {onclick: function(e) {
+		            m("td", m("button", {onclick: function(e) {
 		     				//console.log("del:"+item.key.name)
 		     				PostView.deleteMessage(item.key.kind, item.key.name)
 		                 }},"del")),
