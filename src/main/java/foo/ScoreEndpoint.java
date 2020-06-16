@@ -180,12 +180,13 @@ public class ScoreEndpoint {
 	}
 	
 	//Méthode permettant de supprimer un post
-	@ApiMethod(name = "deleteMessage", httpMethod = HttpMethod.POST)
-	public void deleteMessage(PostKey pk) {
+	@ApiMethod(name = "supprimerMessage", httpMethod = HttpMethod.POST)
+	public Key supprimerMessage(User user, PostKey pk) {
 
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		Key k = KeyFactory.createKey(pk.kind, pk.name);
 		datastore.delete(k);
+		return k;
 	}
 
     

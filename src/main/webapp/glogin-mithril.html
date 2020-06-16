@@ -40,7 +40,7 @@ var Profile={
   	  m("h1", {class: 'title'}, "Pseudo: "+Profile.name),
 	  m("h2", {class: 'subtitle'}, "email:"+Profile.email),
 	  m("h2", {class: 'subtitle'}, "Follower: "+Profile.cptFollower),
-	  m("h2", {class: 'subtitle'}, "Heure du dernier deploy: 11h31 "),
+	  m("h2", {class: 'subtitle'}, "Heure du dernier deploy: 12h22 "),
 	  m("img",{"src":Profile.url}),
 	  m('div', {class:'field'},[
 	         m("label", {class:'label'},"Follow"),
@@ -48,8 +48,8 @@ var Profile={
 	          class:'input is-rounded',
 	          placeholder:"@mail de la personne a follow",
 	             oninput: function(e) {Profile.emailfollow = e.target.value}})),]),
-	  m("button",{class:"button", onclick: function(e) { Profile.loadList()}},"Msgs"),
-	  m("button",{class:"button", onclick: function(e) { Profile.postMessage()}},"Post Dummy"),
+	  m("button",{class:"button", onclick: function(e) { Profile.loadList()}},"Fil d'actu"),
+	  m("button",{class:"button", onclick: function(e) { Profile.postMessage()}},"Poste Message"),
 	  m("button",{class:"button", onclick: function(e) { Profile.follow()}},"Follow"),
 	  m('div', {class:'field'},[
 	         m("label", {class:'label'},"URL"),
@@ -72,7 +72,6 @@ var Profile={
           url: "_ah/api/myApi/v1/collectionresponse_entity"+'?access_token=' + encodeURIComponent(Profile.ID)
           })
       .then(function(result) {
-      	console.log("load_list:",result)
       	Profile.list=result.items
           if ('nextPageToken' in result) {
 	        	Profile.nextToken= result.nextPageToken
@@ -90,7 +89,6 @@ var Profile={
           }
        })
       .then(function(result) {
-      	console.log("next:",result)
       	result.items.map(function(item){Profile.list.push(item)})
           if ('nextPageToken' in result) {
 	        	Profile.nextToken= result.nextPageToken
@@ -101,28 +99,24 @@ var Profile={
    postMessage: function() {
 		var data={'url': Profile.URLpost,
 				'body': Profile.body}
-    	console.log("post:"+data)
 		return m.request({
     		method: "POST",
     		url: "_ah/api/myApi/v1/postMsg"+'?access_token='+encodeURIComponent(Profile.ID),
         	params: data,
     	})
 	    	.then(function(result) {
-	 			console.log("post_message:",result)
 	 			Profile.loadList()
     	 	})
 	},
   follow: function() {
 		var data={'mail': Profile.email,
 				'mailFollow': Profile.emailfollow}
-  	console.log("post:"+ Profile.emailfollow)
 		return m.request({
   		method: "POST",
   		url: "_ah/api/myApi/v1/followprofil"+'?access_token='+encodeURIComponent(Profile.ID),
       	params: data,
   	})
 	    	.then(function(result) {
-	 			console.log("resultat follow:",result)
   	 	})
 	}
 }
@@ -146,11 +140,9 @@ var PostView = {
 			    	m('td', m('label', item.properties.owner)),
 			    	m('td', m('label', item.properties.date)),
 		            m("td", m("button", {onclick: function(e) {
-						console.log("like:"+item.key.name)
 						PostView.likeMessage(item.key.kind, item.key.name)
 		                 }},"like")),
 		            m("td", m("button", {onclick: function(e) {
-		     				//console.log("del:"+item.key.name)
 		     				PostView.deleteMessage(item.key.kind, item.key.name)
 		                 }},"del")),
 			        m('td', m('label', item.properties.body)),
@@ -158,7 +150,6 @@ var PostView = {
 			        m('td', m('label', (item.properties.likec.length)-1)),
 			      ])
 			    }),
-//			    m("div", isError ? "An error occurred" : "Saved"),
 			    m('button',{
 				      class: 'button is-link',
 				      onclick: function(e) {vnode.attrs.profile.next()}
@@ -173,7 +164,7 @@ var PostView = {
 						'name': param2}
 				return m.request({
 		    		method: "POST",
-		    		url: "_ah/api/myApi/v1/deleteMessage"+'?access_token='+encodeURIComponent(Profile.ID),
+		    		url: "_ah/api/myApi/v1/supprimerMessage"+'?access_token='+encodeURIComponent(Profile.ID),
 		        	params: data,
 		    	}).then(function(result) {
 		 			console.log("resultat delete:",result)
@@ -188,7 +179,6 @@ var PostView = {
 		    		url: "_ah/api/myApi/v1/likeMessage"+'?access_token='+encodeURIComponent(Profile.ID),
 		        	params: data,
 		    	}).then(function(result) {
-		 			console.log("resultat like:",result)
 		  	 	})
 			}			  
 		}
@@ -203,7 +193,6 @@ function onSignIn(googleUser) {
   m.route.set("/secret");
   
   var data={'email': Profile.email,'follow': Profile.body,'pseudo': Profile.name}
-	console.log("postProfil:"+data)
 	return m.request({
 		method: "POST",
 		url: "_ah/api/myApi/v1/addprofil"+'?access_token='+encodeURIComponent(Profile.ID),
