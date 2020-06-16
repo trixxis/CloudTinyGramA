@@ -51,85 +51,8 @@ import com.google.appengine.api.datastore.Transaction;
      )
 
 public class ScoreEndpoint {
-
-	Random r = new Random();
-
-	@ApiMethod(name = "getRandom", httpMethod = HttpMethod.GET)
-	public RandomResult random() {
-		return new RandomResult(r.nextInt(6) + 1);
-	}
-
-	@ApiMethod(name = "scores", httpMethod = HttpMethod.GET)
-	public List<Entity> scores() {
-		Query q = new Query("Score").addSort("score", SortDirection.DESCENDING);
-
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		PreparedQuery pq = datastore.prepare(q);
-		List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(100));
-		return result;
-	}
-
-	@ApiMethod(name = "topscores", httpMethod = HttpMethod.GET)
-	public List<Entity> topscores() {
-		Query q = new Query("Score").addSort("score", SortDirection.DESCENDING);
-
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		PreparedQuery pq = datastore.prepare(q);
-		List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(10));
-		return result;
-	}
-
-	@ApiMethod(name = "myscores", httpMethod = HttpMethod.GET)
-	public List<Entity> myscores(@Named("name") String name) {
-		Query q = new Query("Score").setFilter(new FilterPredicate("name", FilterOperator.EQUAL, name)).addSort("score",
-				SortDirection.DESCENDING);
-
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		PreparedQuery pq = datastore.prepare(q);
-		List<Entity> result = pq.asList(FetchOptions.Builder.withLimit(10));
-		return result;
-	}
-
-	@ApiMethod(name = "addScore", httpMethod = HttpMethod.GET)
-	public Entity addScore(@Named("score") int score, @Named("name") String name) {
-
-		Entity e = new Entity("Score", "" + name + score);
-		e.setProperty("name", name);
-		e.setProperty("score", score);
-
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		datastore.put(e);
-
-		return e;
-	}
-
-	@ApiMethod(name = "postMessage", httpMethod = HttpMethod.POST)
-	public Entity postMessage(PostMessage pm) {
-
-		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-		
-		Query q = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, pm.owner));
-		PreparedQuery pq = datastore.prepare(q);
-		Entity result = pq.asSingleEntity();
-		List<String> tab = new ArrayList<>();
-		List<String> tab2 = new ArrayList<>();
-		tab = (List<String>) result.getProperty("follower");
-		tab2.add("");
-		Entity e = new Entity("Post"); // quelle est la clef ?? non specifié -> clef automatique
-		e.setProperty("owner", pm.owner);
-		e.setProperty("url", pm.url);
-		e.setProperty("body", pm.body);
-		e.setProperty("to",tab);
-		e.setProperty("likec", tab2);
-		e.setProperty("date", new Date());
-
-		
-		Transaction txn = datastore.beginTransaction();
-		datastore.put(e);
-		txn.commit();
-		return e;
-	}
 	
+	//Methode permettant l'ajout de profil utilisateur si celui-ci n'existe pas en base
 	@ApiMethod(name = "addprofil", httpMethod = HttpMethod.POST)
 	public Entity addprofil(ProfilMessage Pm) {
 
@@ -146,7 +69,7 @@ public class ScoreEndpoint {
 			tab.add("");
 			List<String> tab2 = new ArrayList<>();
 			tab2.add(Pm.email);
-			Entity e = new Entity("Profil"); // quelle est la clef ?? non specifié -> clef automatique
+			Entity e = new Entity("Profil");
 			e.setProperty("mail", Pm.email);
 			e.setProperty("follow", tab);
 			e.setProperty("follower", tab2);
@@ -159,10 +82,10 @@ public class ScoreEndpoint {
 		return result.get(0);
 	}
 	
+	//Methode permettant de follow un profil déja présent dans la base
 	@ApiMethod(name = "followprofil", httpMethod = HttpMethod.POST)
 	public Entity followprofil(FollowMessage Fm) {
 
-		//Controle si la personne a follow a un profil connu dans la base
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		
 		Query q = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, Fm.mailFollow));
@@ -170,9 +93,8 @@ public class ScoreEndpoint {
 		PreparedQuery pq = datastore.prepare(q);
 		List<Entity> result = pq.asList(FetchOptions.Builder.withDefaults());
 		
-		if (result.size()==1)//test si le profil est en base
+		if (result.size()==1)
 		{
-			//Ajout du follow dans le profil faisant la demande de follow
 			Query q2 = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, Fm.mail));
 			PreparedQuery pq2 = datastore.prepare(q2);
 			Entity result2 = pq2.asSingleEntity();
@@ -183,7 +105,6 @@ public class ScoreEndpoint {
 			Transaction txn = datastore.beginTransaction();
 			datastore.put(result2);
 			
-			//Ajout du follow dans le profil qui a été follow
 			Query q3 = new Query("Profil").setFilter(new FilterPredicate("mail", FilterOperator.EQUAL, Fm.mailFollow));
 			PreparedQuery pq3 = datastore.prepare(q3);
 			Entity result3 = pq3.asSingleEntity();
@@ -202,6 +123,7 @@ public class ScoreEndpoint {
 		}
 	}
 	
+	//Méthode permettant de follow une fois un post 
 	@ApiMethod(name = "likeMessage", httpMethod = HttpMethod.POST)
 	public Key likeMessage(User user, PostKey pk) {
 
@@ -227,6 +149,7 @@ public class ScoreEndpoint {
 		return k;
 	}
 	
+	//Méthode retournant le tableau des likes afin d'avoir un compte via le .length
 	@ApiMethod(name = "cptlike", httpMethod = HttpMethod.POST)
 	public List<String> cptlike(PostKey pk) {
 
@@ -241,6 +164,7 @@ public class ScoreEndpoint {
 		return tab;
 	}
 	
+	//Méthode retournant le tableau des follow afin d'avoir un compte via le .length
 	@ApiMethod(name = "cptfollower", httpMethod = HttpMethod.POST)
 	public List<String> cptfollower(User user) {
 
@@ -255,6 +179,7 @@ public class ScoreEndpoint {
 		return tab;
 	}
 	
+	//Méthode permettant de supprimer un post
 	@ApiMethod(name = "deleteMessage", httpMethod = HttpMethod.POST)
 	public void deleteMessage(PostKey pk) {
 
@@ -263,39 +188,8 @@ public class ScoreEndpoint {
 		datastore.delete(k);
 	}
 
-	@ApiMethod(name = "mypost", httpMethod = HttpMethod.GET)
-	public CollectionResponse<Entity> mypost(@Named("name") String name, @Nullable @Named("next") String cursorString) {
-
-	    Query q = new Query("Post").setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, name));
-
-	    // https://cloud.google.com/appengine/docs/standard/python/datastore/projectionqueries#Indexes_for_projections
-	    //q.addProjection(new PropertyProjection("body", String.class));
-	    //q.addProjection(new PropertyProjection("date", java.util.Date.class));
-	    //q.addProjection(new PropertyProjection("likec", Integer.class));
-	    //q.addProjection(new PropertyProjection("url", String.class));
-
-	    // looks like a good idea but...
-	    // generate a DataStoreNeedIndexException -> 
-	    // require compositeIndex on owner + date
-	    // Explosion combinatoire.
-	    // q.addSort("date", SortDirection.DESCENDING);
-	    
-	    DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
-	    PreparedQuery pq = datastore.prepare(q);
-	    
-	    FetchOptions fetchOptions = FetchOptions.Builder.withLimit(2);
-	    
-	    if (cursorString != null) {
-		fetchOptions.startCursor(Cursor.fromWebSafeString(cursorString));
-		}
-	    
-	    QueryResultList<Entity> results = pq.asQueryResultList(fetchOptions);
-	    cursorString = results.getCursor().toWebSafeString();
-	    
-	    return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
-	    
-	}
     
+	//Méthode retournant la liste des postes d'un profil ainsi que celui de ses follows
 	@ApiMethod(name = "getPost",httpMethod = ApiMethod.HttpMethod.GET)
 	public CollectionResponse<Entity> getPost(User user, @Nullable @Named("next") String cursorString)
 			throws UnauthorizedException {
@@ -304,25 +198,7 @@ public class ScoreEndpoint {
 			throw new UnauthorizedException("Invalid credentials");
 		}
 
-		//Query q = new Query("Post").setFilter(new FilterPredicate("owner", FilterOperator.EQUAL, user.getEmail()));
-		Query q = new Query("Post").setFilter(new FilterPredicate("to", FilterOperator.EQUAL, user.getEmail())); //erreur 400 collection of element require
-
-		// Multiple projection require a composite index
-		// owner is automatically projected...
-		// q.addProjection(new PropertyProjection("body", String.class));
-		// q.addProjection(new PropertyProjection("date", java.util.Date.class));
-		// q.addProjection(new PropertyProjection("likec", Integer.class));
-		// q.addProjection(new PropertyProjection("url", String.class));
-
-		// looks like a good idea but...
-		// require a composite index
-		// - kind: Post
-		//  properties:
-		//  - name: owner
-		//  - name: date
-		//    direction: desc
-
-		// q.addSort("date", SortDirection.DESCENDING);
+		Query q = new Query("Post").setFilter(new FilterPredicate("to", FilterOperator.EQUAL, user.getEmail()));
 
 		DatastoreService datastore = DatastoreServiceFactory.getDatastoreService();
 		PreparedQuery pq = datastore.prepare(q);
@@ -339,6 +215,7 @@ public class ScoreEndpoint {
 		return CollectionResponse.<Entity>builder().setItems(results).setNextPageToken(cursorString).build();
 	}
 
+	//Méthode permettant de poster un message
 	@ApiMethod(name = "postMsg", httpMethod = HttpMethod.POST)
 	public Entity postMsg(User user, PostMessage pm) throws UnauthorizedException {
 
@@ -365,14 +242,8 @@ public class ScoreEndpoint {
 		e.setProperty("likec", tab2);
 		e.setProperty("date", new Date());
 
-///		Solution pour pas projeter les listes
-//		Entity pi = new Entity("PostIndex", e.getKey());
-//		HashSet<String> rec=new HashSet<String>();
-//		pi.setProperty("receivers",rec);
-		
 		Transaction txn = datastore.beginTransaction();
 		datastore.put(e);
-//		datastore.put(pi);
 		txn.commit();
 		return result;
 	}

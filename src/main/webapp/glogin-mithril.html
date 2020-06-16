@@ -40,6 +40,7 @@ var Profile={
   	  m("h1", {class: 'title'}, "Pseudo: "+Profile.name),
 	  m("h2", {class: 'subtitle'}, "email:"+Profile.email),
 	  m("h2", {class: 'subtitle'}, "Follower: "+Profile.cptFollower),
+	  m("h2", {class: 'subtitle'}, "Heure du dernier deploy: 11h31 "),
 	  m("img",{"src":Profile.url}),
 	  m('div', {class:'field'},[
 	         m("label", {class:'label'},"Follow"),
@@ -142,8 +143,8 @@ var PostView = {
 			    ]),
 			    vnode.attrs.profile.list.map(function(item) {
 			      return m("tr", [
-			    	m('td', m('label', "Mr Test")),
-			    	m('td', m('label', "15/02/1991")),
+			    	m('td', m('label', item.properties.owner)),
+			    	m('td', m('label', item.properties.date)),
 		            m("td", m("button", {onclick: function(e) {
 						console.log("like:"+item.key.name)
 						PostView.likeMessage(item.key.kind, item.key.name)
